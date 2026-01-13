@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Happy New Year 2026</title>
+<style>
+html,body{
+  margin:0;
+  padding:0;
+  overflow:hidden;
+  background:black;
+  font-family: Arial, sans-serif;
+}
+canvas{
+  position:fixed;
+  top:0;left:0;
+}
+#startScreen{
+  position:fixed;
+  inset:0;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+}
+#startScreen h1{
+  color:#ffd700;
+  font-size:64px;
+  text-shadow:0 0 20px gold;
+}
+#startBtn{
+  margin-top:30px;
+  padding:18px 50px;
+  font-size:28px;
+  border:none;
+  border-radius:40px;
+  cursor:pointer;
+  background:linear-gradient(45deg,#ffcc00,#ff9900);
+  box-shadow:0 0 25px gold;
+}
+.text{
+  position:fixed;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  color:#ffd700;
+  font-size:60px;
+  text-shadow:0 0 15px gold;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .3s;
+}
+.big{
+  font-size:90px;
+}
+</style>
+</head>
+<body>
+
+<div id="startScreen">
+  <h1>Happy New Year</h1>
+  <button id="startBtn">BẮT ĐẦU</button>
+</div>
+
+<div id="countdown" class="text big"></div>
+<div id="msg" class="text"></div>
+
+<canvas id="c"></canvas>
+
+<script>
+const c = document.getElementById("c");
+const ctx = c.getContext("2d");
+resize();
+window.onresize = resize;
+
+function resize(){
+  c.width = innerWidth;
+  c.height = innerHeight;
+}
+
+let fireworks = [];
+
+class Particle{
+  constructor(x,y,color){
+    this.x=x;this.y=y;
+    this.vx=(Math.random()-0.5)*6;
+    this.vy=(Math.random()-0.5)*6;
+    this.life=80;
+    this.color=color;
+  }
+  update(){
+    this.x+=this.vx;
+    this.y+=this.vy;
+    this.vy+=0.05;
+    this.life--;
+  }
+  draw(){
+    ctx.fillStyle=this.color;
+    ctx.beginPath();
+    ctx.arc(this.x,this.y,2,0,Math.PI*2);
+    ctx.fill();
+  }
+}
+
+function explode(x,y){
+  const colors=["red","yellow","lime","cyan","violet","orange"];
+  for(let i=0;i<120;i++){
+    fireworks.push(new Particle(x,y,colors[Math.random()*colors.length|0]));
+  }
+}
+
+function loop(){
+  ctx.fillStyle="rgba(0,0,0,0.2)";
+  ctx.fillRect(0,0,c.width,c.height);
+  fireworks.forEach((p,i)=>{
+    p.update();
+    p.draw();
+    if(p.life<=0)fireworks.splice(i,1);
+  });
+  requestAnimationFrame(loop);
+}
+loop();
+
+function randomFirework(mult=1){
+  for(let i=0;i<mult;i++){
+    explode(Math.random()*c.width,Math.random()*c.height*0.7);
+  }
+}
+
+const startBtn=document.getElementById("startBtn");
+const startScreen=document.getElementById("startScreen");
+const cd=document.getElementById("countdown");
+const msg=document.getElementById("msg");
+
+startBtn.onclick=()=>{
+  startScreen.style.display="none";
+  startShow();
+};
+
+function showText(el,text,time){
+  el.innerText=text;
+  el.style.opacity=1;
+  setTimeout(()=>el.style.opacity=0,time);
+}
+
+function startShow(){
+  let t=0;
+
+  const cdArr=["3","2","1","0"];
+  cdArr.forEach((n,i)=>{
+    setTimeout(()=>{
+      showText(cd,n,1000);
+      randomFirework(2);
+    },i*1000);
+  });
+
+  const timer=setInterval(()=>{
+    t++;
+
+    let mult=1;
+    if(t>=10&&t<20)mult=2;
+    if(t>=20)mult=3;
+    randomFirework(mult);
+
+    if(t===10)showText(msg,"Vạn sự như ý",1000);
+    if(t===18)showText(msg,"An khang thịnh vượng",1000);
+    if(t===24)showText(msg,"Tấn tài tấn lộc",1000);
+
+    if(t===27){
+      msg.innerText="Happy New Year 2026";
+      msg.style.fontSize="48px";
+      msg.style.opacity=1;
+      setTimeout(()=>msg.style.opacity=0,6000);
+    }
+
+    if(t>=35)clearInterval(timer);
+  },1000);
+}
+</script>
+
+</body>
+</html>
